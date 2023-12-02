@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- api consume -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        body{
+            background-color: black;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .container{
+            background-color: rgb(143, 220, 36);
+            width: 100%;
+            height: 300px;
+            padding-bottom: 60px;
+            
+        }
+        .container .header{
+            display: flex;
+            justify-content: space-around;
+            /* background-color: green; */
+            padding-top: 30px;
+        }
+        .container .header .col-l{
+            /* background-color: rebeccapurple; */
+            color: rgb(39, 39, 39);
+            padding-top: 10px;
+            width: 500px;
+        }
+        .container .header .col-l input{
+            width: 300px;
+            height: 30px;
+            border-radius: 8px;
+            padding: 5px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            outline: none;
+            box-shadow: -5px 8px 30px rgb(14, 210, 14);
+        }
+        .container .header .col-l button{
+            width: 100px;
+            height: 40px;
+            border-radius: 8px;
+            font-weight: bold;
+            border: 1px solid rgb(45, 45, 45);
+            background-color: rgb(45, 45, 45);
+            color: whitesmoke;
+            cursor: pointer;
+        }
+
+        .container .header .col-r{
+            /* background-color: rebeccapurple; */
+
+        }
+        .container .header .col-r img{
+           width: 450px;
+           height: 280px;
+           object-fit: cover;
+           box-shadow: -5px 8px 30px rgb(14, 210, 14);
+           border-radius: 12px;
+        }
+        h1{
+            font-size: 33px;
+            margin-bottom: -10px;
+        }
+        p{
+            margin-bottom: 40px;
+            color: rgb(97, 97, 97);
+        }
+        span{
+            color: rgb(243, 41, 41);
+            font-style: italic;
+        }
+        #kategoriList{
+            background-color: rgb(69, 69, 2);
+            width: auto;
+            margin: 50px;
+            padding: 30px 20px;
+            border-radius: 12px;
+            display: flex; 
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="col-l">
+                <h1>Learn about <span>REST APIs</span>, how to <span>create</span> and how to <span>use</span> them.</h1>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.eaque reprehenderit minima sapiente voluptate delectus perspiciatis. Reiciendis, et!</p>
+                <form id="createForm">
+                    <input type="text" id="namaKategori" name="namaKategori" required placeholder="Kategoori">
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+            <div class="col-r">
+                <img src="API.webp" alt="">
+            </div>
+        </div>
+    </div>
+
+    <div id="kategoriList">
+
+    </div>
+
+
+
+    <script type="text/javascript">
+        // READ ALL (GET)
+        function getAllKategori() {
+            $.ajax({
+                url: "http://127.0.0.1:8000/kategori/",
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    displayKategoriList(data.results);
+                },
+                error: function(error) {
+                    console.error('Error loading kategori:', error);
+                }
+            });
+        }
+
+        // READ DETAIL (GET)
+        function getKategoriDetail(id) {
+            $.ajax({
+                url: `http://127.0.0.1:8000/kategori/${id}`,
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    console.log('Detail Kategori:', data);
+                    // Tampilkan detail kategori di dalam elemen HTML sesuai kebutuhan
+                    alert(`Detail Kategori\nID: ${data.id}\nNama: ${data.nama_kategori}\nCreated At: ${data.create_at}\nUpdated At: ${data.update_at}`);
+                },
+                error: function(error) {
+                    console.error('Error loading kategori detail:', error);
+                }
+            });
+        }
+
+        // CREATE (POST)
+        function createFormSubmitHandler(event) {
+            event.preventDefault();
+            var namaKategori = $("#namaKategori").val();
+            console.log(namaKategori);
+
+            $.ajax({
+                url: "http://127.0.0.1:8000/kategori/",
+                type: "POST",
+                dataType: "json",
+                data: { "nama_kategori": namaKategori },
+                success: function(data) {
+                    console.log('Kategori created successfully:', data);
+                    alert('Kategori berhasil ditambahkan.');
+                    // Setelah CREATE, muat ulang daftar kategori
+                    getAllKategori();
+                },
+                error: function(error) {
+                    console.error('Error creating kategori:', error);
+                }
+            });
+        }
+
+        // DELETE (DELETE)
+        function deleteKategori(id) {
+            var confirmation = confirm("Apakah Anda yakin ingin menghapus kategori ini?");
+            if (confirmation) {
+                $.ajax({
+                    url: `http://127.0.0.1:8000/kategori/${id}`,
+                    type: "DELETE",
+                    success: function(data) {
+                        console.log('Kategori deleted successfully:', data);
+                        alert('Kategori berhasil dihapus.');
+                        // Setelah DELETE, muat ulang daftar kategori
+                        getAllKategori();
+                    },
+                    error: function(error) {
+                        console.error('Error deleting kategori:', error);
+                    }
+                });
+            }
+        }
+
+        // UPDATE (PUT)
+        function updateKategori(id, newData) {
+            // Menampilkan data kategori yang akan diubah pada form inputan
+            $("#namaKategori").val(newData.nama_kategori);
+
+            // Membuat event submit baru pada form untuk menjalankan fungsi update
+            $("#createForm").off("submit").submit(function(event) {
+                event.preventDefault();
+                $.ajax({
+                    url: `http://127.0.0.1:8000/kategori/${id}`,
+                    type: "PUT",
+                    dataType: "json",
+                    data: { "nama_kategori": $("#namaKategori").val() },
+                    success: function(data) {
+                        console.log('Kategori updated successfully:', data);
+                        alert('Kategori berhasil diperbarui.');
+                        // Setelah UPDATE, muat ulang daftar kategori
+                        getAllKategori();
+                        // Mengosongkan nilai pada form inputan setelah pembaruan
+                        $("#namaKategori").val("");
+                        // Kembali mengaitkan fungsi createForm setelah pembaruan
+                        $("#createForm").off("submit").submit(createFormSubmitHandler);
+                    },
+                    error: function(error) {
+                        console.error('Error updating kategori:', error);
+                    }
+                });
+            });
+        }
+
+        // Fungsi untuk menampilkan daftar kategori
+        function displayKategoriList(kategoriArray) {
+            var kategoriList = $("#kategoriList");
+            kategoriList.empty();
+
+            $.each(kategoriArray, function(index, kategori) {
+                var kategoriHTML = `
+                    <div class="kategori" style="background-color: yellowgreen; padding: 10px; border-radius: 8px; box-shadow: 5px 10px 20px rgba(63, 63, 63, 0.833); margin-bottom: 30px;">
+                        <div class="" style="line-height: 2px; position: relative; padding: 10px;">
+                            <p style="font-weight: bold; font-size: 50px; position: absolute; margin-top: 20px;">${kategori.id}</p>
+                            <p style="padding-top: 50px; font-size: 25px; font-weight: bold; color: white;">${kategori.nama_kategori}</p>
+                            <p style="margin-top: -10px; font-size: 13px;">Create: ${kategori.create_at}</p>
+                            <p style="margin-top: -15px; font-size: 13px;">Update: ${kategori.update_at}</p>
+                        </div>
+
+                        <div class="" style=" margin-top: -15px; margin-bottom: 10px; background-color: whitesmoke; padding: 10px; display: flex; justify-content: space-around; border-radius: 4px;">
+                            <button onclick="getKategoriDetail(${kategori.id})" style="padding: 5px 8px; font-size: 12px; font-weight: bold; border-radius: 2px; border:1px solid yellowgreen; outline: none; color: rgb(82, 114, 17);">Detail</button>
+                            <button onclick="deleteKategori(${kategori.id})" style="padding: 5px 8px; font-size: 12px; font-weight: bold; border-radius: 2px; border:1px solid yellowgreen; outline: none; color: rgb(82, 114, 17);">Delete</button>
+                            <button onclick="updateKategori(${kategori.id}, {nama_kategori: 'Updated Name'})" style="padding: 5px 8px; font-size: 12px; font-weight: bold; border-radius: 2px; border:1px solid yellowgreen; outline: none; color: rgb(82, 114, 17);">Update</button>
+                        </div>
+                    </div> 
+                `;
+
+                kategoriList.append(kategoriHTML);
+            });
+        }
+
+        $(document).ready(function(){
+            // Menambahkan event submit pada form untuk fungsi create
+            $("#createForm").submit(createFormSubmitHandler);
+
+            // Panggil fungsi untuk mendapatkan dan menampilkan daftar kategori saat halaman dimuat
+            getAllKategori();
+        });
+    </script>
+    
+</body>
+</html>
